@@ -1,5 +1,6 @@
 // Импортируем стили
 import '../css/style.css';
+import goblinImage from '../css/goblin.png';
 
 // Основной класс игры
 class GoblinGame {
@@ -29,29 +30,35 @@ class GoblinGame {
             const cell = document.createElement('div');
             cell.className = 'cell';
             cell.dataset.index = i;
-            gameBoard.appendChild(cell);
+            gameBoard.append(cell);
         }
         console.log('Game board created');
     }
 
     createGoblin() {
-        // Удаляем существующего гоблина
-        const existingGoblin = document.querySelector('.goblin');
-        if (existingGoblin) {
-            existingGoblin.remove();
+        if (this.goblinElement) {
+            this.removeGoblinClickListener();
+            this.goblinElement.remove();
         }
 
-        // Создаем нового гоблина
-        const goblin = document.createElement('div');
-        goblin.className = 'goblin';
-        goblin.textContent = '👺';
+        this.goblinElement = document.createElement('div');
+        this.goblinElement.className = 'goblin';
         
-        // Обработчик клика
-        goblin.addEventListener('click', () => {
-            this.handleGoblinClick();
-        });
+        const img = document.createElement('img');
+        img.src = goblinImage;
+        img.alt = 'Гоблин';
+        img.className = 'goblin-img';
+        
+        this.goblinElement.append(img);
+        this.goblinElement.addEventListener('click', this.handleGoblinClick.bind(this));
 
-        return goblin;
+        return this.goblinElement;
+    }
+
+    removeGoblinClickListener() {
+        if (this.goblinElement) {
+            this.goblinElement.removeEventListener('click', this.handleGoblinClick.bind(this));
+        }
     }
 
     getRandomPosition() {
@@ -68,7 +75,7 @@ class GoblinGame {
         const cells = document.querySelectorAll('.cell');
         const goblin = this.createGoblin();
 
-        cells[newPosition].appendChild(goblin);
+        cells[newPosition].append(goblin);
         this.currentPosition = newPosition;
     }
 
@@ -92,6 +99,18 @@ class GoblinGame {
             this.timer++;
             document.getElementById('timer').textContent = this.timer;
         }, 1000);
+    }
+
+    stopGame () {
+        if (this.intervalId) {
+            clearInterval(this.intervalId);
+            this.intervalId = null;
+        }
+
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.intervalId = null;
+        }
     }
 }
 
