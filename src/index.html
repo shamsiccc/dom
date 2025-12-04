@@ -3,16 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Goblin Game</title>
+    <title>Goblin Hammer Game</title>
 </head>
 <body>
     <div class="container">
-        <h1>Поймай гоблина!</h1>
+        <h1>🎯 Ударь гоблина молотком!</h1>
+        
         <div class="game-info">
-            <div class="score">Счет: <span id="score">0</span></div>
-            <div class="timer">Время: <span id="timer">0</span>с</div>
+            <div class="score">Попадания: <span id="score">0</span></div>
+            <div class="misses">Промахи: <span id="misses">0</span>/5</div>
         </div>
+        
         <div id="game-board" class="game-board"></div>
+        
+        <div class="controls">
+            <button id="start-game">Начать игру</button>
+            <button id="restart-game" class="hidden">Играть снова</button>
+        </div>
+        
+        <div id="game-over" class="hidden">
+            <h2>Игра окончена!</h2>
+            <p>Ваш счет: <span id="final-score">0</span></p>
+            <p>Вы пропустили 5 гоблинов</p>
+        </div>
     </div>
 </body>
 </html>

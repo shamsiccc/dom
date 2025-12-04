@@ -1,120 +1,83 @@
-// Импортируем стили
 import '../css/style.css';
-import goblinImage from '../css/goblin.png';
+import hammerCursor from '../css/hammer_straight.jpeg';
+import hammerActive from '../css/hammer_down.jpeg';
+import Board from './Board.js';
+import ScoreService from './ScoreService.js';
+import GameControl from './GameControl.js';
+import Game from './Game.js';
 
-// Основной класс игры
-class GoblinGame {
+class App {
     constructor() {
-        this.boardSize = 4;
-        this.score = 0;
-        this.timer = 0;
-        this.currentPosition = null;
-        this.intervalId = null;
-        this.timerInterval = null;
+        this.board = new Board(4);
+        this.scoreService = new ScoreService();
+        this.gameControl = new GameControl();
+        this.game = null;
         
         this.init();
     }
 
     init() {
-        console.log('Game initializing...');
-        this.createGameBoard();
-        this.startGame();
-        this.startTimer();
-    }
-
-    createGameBoard() {
-        const gameBoard = document.getElementById('game-board');
+        // Устанавливаем кастомный курсор
+        document.body.style.cursor = `url(${hammerCursor}), auto`;
         
-        // Создаем игровое поле 4x4
-        for (let i = 0; i < this.boardSize * this.boardSize; i++) {
-            const cell = document.createElement('div');
-            cell.className = 'cell';
-            cell.dataset.index = i;
-            gameBoard.append(cell);
-        }
-        console.log('Game board created');
-    }
-
-    createGoblin() {
-        if (this.goblinElement) {
-            this.removeGoblinClickListener();
-            this.goblinElement.remove();
-        }
-
-        this.goblinElement = document.createElement('div');
-        this.goblinElement.className = 'goblin';
+        // Инициализируем контролы
+        this.gameControl.init(
+        () => this.startGame(),
+        () => this.restartGame()
+        );
         
-        const img = document.createElement('img');
-        img.src = goblinImage;
-        img.alt = 'Гоблин';
-        img.className = 'goblin-img';
-        
-        this.goblinElement.append(img);
-        this.goblinElement.addEventListener('click', this.handleGoblinClick.bind(this));
-
-        return this.goblinElement;
+        // Добавляем обработчики кликов по ячейкам
+        this.setupCellClickHandlers();
     }
 
-    removeGoblinClickListener() {
-        if (this.goblinElement) {
-            this.goblinElement.removeEventListener('click', this.handleGoblinClick.bind(this));
+    setupCellClickHandlers() {
+    const gameBoard = document.getElementById('game-board');
+    
+    // При наведении на ячейку - активный молоток
+    gameBoard.addEventListener('mouseover', (event) => {
+        const cell = event.target.closest('.cell');
+        if (cell) {
+            cell.style.cursor = `url(${hammerActive}), pointer`;
         }
-    }
-
-    getRandomPosition() {
-        let newPosition;
-        do {
-            newPosition = Math.floor(Math.random() * this.boardSize * this.boardSize);
-        } while (newPosition === this.currentPosition);
-        
-        return newPosition;
-    }
-
-    placeGoblin() {
-        const newPosition = this.getRandomPosition();
-        const cells = document.querySelectorAll('.cell');
-        const goblin = this.createGoblin();
-
-        cells[newPosition].append(goblin);
-        this.currentPosition = newPosition;
-    }
-
-    handleGoblinClick() {
-        this.score++;
-        document.getElementById('score').textContent = this.score;
-        this.placeGoblin(); // Перемещаем сразу после клика
-    }
-
-    startGame() {
-        this.placeGoblin();
-        
-        // Перемещаем гоблина каждые 2 секунды
-        this.intervalId = setInterval(() => {
-            this.placeGoblin();
-        }, 2000);
-    }
-
-    startTimer() {
-        this.timerInterval = setInterval(() => {
-            this.timer++;
-            document.getElementById('timer').textContent = this.timer;
-        }, 1000);
-    }
-
-    stopGame () {
-        if (this.intervalId) {
-            clearInterval(this.intervalId);
-            this.intervalId = null;
+    });
+    
+    // При уходе - обычный молоток
+    gameBoard.addEventListener('mouseout', (event) => {
+        const cell = event.target.closest('.cell');
+        if (cell) {
+            cell.style.cursor = `url(${hammerCursor}), auto`;
         }
-
-        if (this.timerInterval) {
-            clearInterval(this.timerInterval);
-            this.intervalId = null;
+    });
+    
+    // Обработчик клика
+    gameBoard.addEventListener('click', (event) => {
+        const cell = event.target.closest('.cell');
+        if (cell && this.game) {
+            const cellIndex = parseInt(cell.dataset.index);
+            this.game.handleCellClick(cellIndex);
         }
-    }
+    });
 }
 
-// Запускаем игру когда DOM загружен
-document.addEventListener('DOMContentLoaded', () => {
-    new GoblinGame();
+    startGame() {
+        this.gameControl.hideGameOver();
+        this.gameControl.disableStartButton();
+        
+        this.game = new Game(this.board, this.scoreService, this.gameControl);
+        this.game.start();
+    }
+
+    restartGame() {
+        if (this.game) {
+        this.game.stop();
+        }
+        
+        this.startGame();
+    }
+    }
+
+
+    // Запускаем приложение
+    document.addEventListener('DOMContentLoaded', () => {
+    new App();
 });
