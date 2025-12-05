@@ -1,6 +1,4 @@
 import '../css/style.css';
-import hammerCursor from '../css/hammer_straight.jpeg';
-import hammerActive from '../css/hammer_down.jpeg';
 import Board from './Board.js';
 import ScoreService from './ScoreService.js';
 import GameControl from './GameControl.js';
@@ -17,47 +15,28 @@ class App {
     }
 
     init() {
-        // Устанавливаем кастомный курсор
-        document.body.style.cursor = `url(${hammerCursor}), auto`;
-        
-        // Инициализируем контролы
         this.gameControl.init(
-        () => this.startGame(),
-        () => this.restartGame()
+            () => this.startGame(),
+            () => this.restartGame()
         );
         
-        // Добавляем обработчики кликов по ячейкам
-        this.setupCellClickHandlers();
+        this.setupClickHandler();
     }
 
-    setupCellClickHandlers() {
-    const gameBoard = document.getElementById('game-board');
-    
-    // При наведении на ячейку - активный молоток
-    gameBoard.addEventListener('mouseover', (event) => {
-        const cell = event.target.closest('.cell');
-        if (cell) {
-            cell.style.cursor = `url(${hammerActive}), pointer`;
-        }
-    });
-    
-    // При уходе - обычный молоток
-    gameBoard.addEventListener('mouseout', (event) => {
-        const cell = event.target.closest('.cell');
-        if (cell) {
-            cell.style.cursor = `url(${hammerCursor}), auto`;
-        }
-    });
-    
-    // Обработчик клика
-    gameBoard.addEventListener('click', (event) => {
-        const cell = event.target.closest('.cell');
-        if (cell && this.game) {
-            const cellIndex = parseInt(cell.dataset.index);
-            this.game.handleCellClick(cellIndex);
-        }
-    });
-}
+    setupClickHandler() {
+        const gameBoard = document.getElementById('game-board');
+        
+        gameBoard.addEventListener('click', (event) => {
+            const cell = event.target.closest('.cell');
+            if (cell && this.game && this.game.isRunning) {
+                const cellIndex = parseInt(cell.dataset.index);
+                this.game.handleCellClick(cellIndex);
+                
+                cell.classList.add('clicked');
+                setTimeout(() => cell.classList.remove('clicked'), 200);
+            }
+        });
+    }
 
     startGame() {
         this.gameControl.hideGameOver();
@@ -69,15 +48,12 @@ class App {
 
     restartGame() {
         if (this.game) {
-        this.game.stop();
+            this.game.stop();
         }
-        
         this.startGame();
     }
-    }
+}
 
-
-    // Запускаем приложение
-    document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', () => {
     new App();
 });
